@@ -1,5 +1,7 @@
 import ipywidgets as widgets
 from IPython.display import clear_output, HTML, display, Javascript
+import pandas as pd
+
 cells_visable = True
 def toggle_code_cells(btn):
     global cells_visable
@@ -52,7 +54,7 @@ class component_row(object):
         self._massfrac_max = widgets.BoundedFloatText(description=' max:',width=75,min=0.,max=1.)
 
         for x in ['element','compound','massfrac','massfrac_min','massfrac_max']:
-            getattr(self,'_'+x).margin = 2
+            getattr(self,'_'+x).margin = 0
         
         
         #monitor element
@@ -96,8 +98,23 @@ class component_row(object):
         return self._massfrac_max.value
     
     def display(self):
-        return x._box
+        return self._box
 
+
+    def to_dict(self):
+        return dict(element=self.element,compound=self.compound,massfrac=self.massfrac,massfrac_min=self.massfrac_min,massfrac_max=self.massfrac_max)
+        
+
+
+class component_row_del(component_row):
+
+    def __init__(self):
+        component_row.__init__(self)
+        
+        self._button_del = widgets.Button(description='delete',width=30)
+        self._box.children = self._box.children + (self._button_del,)
+        
+        
 
 class mult_rows(object):
     
@@ -108,20 +125,25 @@ class mult_rows(object):
         self._button_add = widgets.Button(description='add')
         self._button_add.on_click(self._click_button_add)
 
-        self._button_del = widgets.Button(description='delete')
-        self._button_del.on_click(self._click_button_del)
+        # self._button_del = widgets.Button(description='delete')
+        # self._button_del.on_click(self._click_button_del)
 
-        self._head = widgets.HBox(children=(self._ncomp,self._button_add,self._button_del))
+        self._head = widgets.HBox(children=(self._ncomp,self._button_add))#,self._button_del))
         
         #intial box setup
         self._rows = []
         self._ring = []
-        
+
         self._box = widgets.VBox()
+        
 
         self.ncomp = ncomp
         self.update_rows()
         self.update_box()
+
+
+    def __getitem__(self,i):
+        return self._rows[i]
 
     @property
     def ncomp(self):
@@ -139,14 +161,20 @@ class mult_rows(object):
     def nrow(self):
         return len(self._rows)
 
+
+    def new_row(self):
+        if len(self._ring)>0:
+            return self._ring.pop()
+        else:
+            new = component_row_del()
+        return new
     
     def add_row(self):
         #from ring?
-        if len(self._ring)>0:
-            new = self._ring.pop()
-        else:
-            new = component_row()
+        new = self.new_row()
         self._rows.append(new)
+        new._button_del.on_click(self._click_button_del_row)
+        
 
     def pop_row(self,index=-1):
         row = self._rows.pop(index)
@@ -176,7 +204,13 @@ class mult_rows(object):
             self.ncomp = self.ncomp -1
             self.pop_row()
             self.update_box()
-            
+
+    def _click_button_del_row(self,d):
+        L = [r._button_del for r in self._rows]
+        index = L.index(d)
+        self.ncomp = self.ncomp - 1
+        self.pop_row(index)
+        self.update_box()
         
     def update_box(self):
         L = [self._head] + [r._box for r in self._rows] 
@@ -184,3 +218,7 @@ class mult_rows(object):
 
     def display(self):
         return self._box    
+
+    def to_df(self):
+        return pd.DataFrame([x.to_dict() for x in self])
+
