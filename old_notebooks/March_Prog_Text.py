@@ -1,32 +1,37 @@
+import pandas
+
+
 df_oxides = pandas.read_csv('./data/oxide.cvs')
 df_salts = pandas.read_csv('./data/salt.csv')
-
 
 unique_elements_oxides = df_oxides.Target.unique()
 unique_elements_salts = df_salts.Target.unique()
 
 
 def get_element(element):
-#Create function that prompts user to input target element
+        """
+        Create function that prompts user to input target element
 
-#Parameters
-#----------
-#
-#element: str
-#
-#entered through widget (Select)
+        Parameters
+        ----------
 
+        element: str
+
+        entered through widget (Select)
+        """
 	return element
 	
+
+
 select_target_element = widgets.Select(
 	options=[element_list],height=60,width=50)
 	
 #get_element(select_target_element)
 
 def get_compound_type(compound_type):
-
 	return df_compound_type
 	#???
+
 select_compound_type = widgets.Dropdown(
 	options = ['Acids', 'Oxides', 'Salts'],
 	value = '',
@@ -35,14 +40,14 @@ select_compound_type = widgets.Dropdown(
 
 #get_compound_type(select_compound_type)
 
-df_oxides = pd.read_csv('./data/oxide.csv')
-df_salts = pd.read_csv('./data/salt.csv')
+# df_oxides = pd.read_csv('./data/oxide.csv')
+# df_salts = pd.read_csv('./data/salt.csv')
 
-unique_elements_oxides = df_oxides.Target.unique()
-unique_elements_salts = df_salts.Target.unique()
+# unique_elements_oxides = df_oxides.Target.unique()
+# unique_elements_salts = df_salts.Target.unique()
 
 def get_compound(df, compound):
-	return df[df['Compound']==element.Formula.unique()
+	return df[df['Compound']==element.Formula.unique()]
 
 #get_compound(select_compound_type,select_target_element)
 
