@@ -1,6 +1,10 @@
 import ipywidgets as widgets
 from IPython.display import clear_output, HTML, display, Javascript
 import pandas as pd
+import periodictable as PT
+
+from suggester_interface import get_compound_list
+
 
 cells_visable = True
 def toggle_code_cells(btn):
@@ -26,6 +30,40 @@ toggle_btn.on_click(toggle_code_cells)
 def init():
     display(run_button)
     display(toggle_btn)
+
+
+
+_global_element_list = [str(v) for k,v in PT.elements._element.iteritems() if k>0]
+
+
+
+class DropOrText(object):
+    
+    def __init__(self,description,width=100):
+        
+        self._drop = widgets.Dropdown(description=description,width=width)
+        self._text = widgets.Text(description=description,width=width)
+        self._box = widgets.HBox()
+        #self.set_drop()
+
+    def set_drop(self):
+        self._box.children = (self._drop,)
+        
+    def set_text(self):
+        self._box.children = (self._text,)
+        
+    def display(self):
+        return self._box
+    
+    @property
+    def options(self):
+        return self._box.children[0].options
+    
+    @options.setter
+    def options(self,value):
+        self.set_drop()
+        self._drop.options = value
+        
     
 
 
@@ -39,9 +77,14 @@ class component_row(object):
         
         #elemenets
         #self._element = widgets.Dropdown(options=['','a','b','c'],value='',description='Element:',width=20)
-        self._element = widgets.Select(options=['a','b','c'],height=60,width=50)
+        self._element = widgets.Select(options=_global_element_list,height=60,width=50)
+
+        #compound_type
+        self._compound_type = widgets.Dropdown(options=['acid','oxide','salt','user'],description=' Type ',width=100)
+        
         
         #blank compound list
+        #self._compound = DropOrText(description=' Compound ',width=180)
         self._compound = widgets.Dropdown(options=[],description=' Compound ',width=180)
         
         #blank mass fraction
@@ -59,20 +102,21 @@ class component_row(object):
         
         #monitor element
         self._element.observe(self.populate_compound)
+        self._compound_type.observe(self.populate_compound)
+        
+
+        
         self._box = widgets.HBox()
-        self._box.children = (self._element,self._compound,self._massfrac,self._massfrac_min,self._massfrac_max)
+        self._box.children = (self._element,self._compound_type,self._compound,self._massfrac,self._massfrac_min,self._massfrac_max)
         
     def populate_compound(self,sender,*args,**kwargs):
         
-        v = self.element
-        out = None
-        if v=='a':
-            out = [1,2,3]
-        elif v =='b':
-            out = [10,20,30]
-        elif v == 'c':
-            out = [100,200,300]
-            
+        element_name  = self.element
+        compound_type = self.compound_type
+        
+        out = get_compound_list(element_name,compound_type)
+        
+        #out = [element_name,compound_type]
         if out is not None:
             self._compound.options = list(map(str,out))
         
@@ -80,6 +124,11 @@ class component_row(object):
     @property
     def element(self):
         return self._element.value
+
+    @property
+    def compound_type(self):
+        return self._compound_type.value
+
     
     @property
     def compound(self):

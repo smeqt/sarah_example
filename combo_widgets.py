@@ -39,13 +39,12 @@ _global_element_list = [str(v) for k,v in PT.elements._element.iteritems() if k>
 
 class DropOrText(object):
     
-    def __init__(self,width=100):
+    def __init__(self,description,width=100):
         
-        self._drop = widgets.Dropdown(width=width)
-        self._text = widgets.Text(width=width)
-        
+        self._drop = widgets.Dropdown(description=description,width=width)
+        self._text = widgets.Text(description=description,width=width)
         self._box = widgets.HBox()
-        
+        #self.set_drop()
 
     def set_drop(self):
         self._box.children = (self._drop,)
@@ -81,10 +80,11 @@ class component_row(object):
         self._element = widgets.Select(options=_global_element_list,height=60,width=50)
 
         #compound_type
-        self._compound_type = widgets.Dropdown(options=['acid','oxide','salt'],description=' Type ',width=100)
+        self._compound_type = widgets.Dropdown(options=['acid','oxide','salt','user'],description=' Type ',width=100)
         
         
         #blank compound list
+        #self._compound = DropOrText(description=' Compound ',width=180)
         self._compound = widgets.Dropdown(options=[],description=' Compound ',width=180)
         
         #blank mass fraction
@@ -114,8 +114,9 @@ class component_row(object):
         element_name  = self.element
         compound_type = self.compound_type
         
-        out = [element_name,compound_type]
-            
+        out = get_compound_list(element_name,compound_type)
+        
+        #out = [element_name,compound_type]
         if out is not None:
             self._compound.options = list(map(str,out))
         

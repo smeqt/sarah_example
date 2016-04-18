@@ -1,5 +1,5 @@
 import pandas as pd
-import suggester
+#import suggester
  
 
 #df_oxides = pandas.read_csv('./data/oxide.cvs')
@@ -9,8 +9,8 @@ import suggester
 #unique_elements_oxides = df_oxides.Target.unique()
 #unique_elements_salts = df_salts.Target.unique()
 
-import combo_widgets
-reload (combo_widgets)
+#import combo_widgets
+#reload (combo_widgets)
 
 compound_information = combo_widgets.mult_rows(5)
 compound_information.display
@@ -89,7 +89,7 @@ def get_compound_list(target_element,compound_type,S=None):
 	elif compound_type == 'salt':
 		df = S.salt
 	else:
-		raise ValueError('Compound type must be one of ["acid", "oxide", "salt", "all"]
+		raise ValueError('Compound type must be one of ["acid", "oxide", "salt", "all"]')
 		
 	out = df.query_target(target_element)['Formula'].tolist()
 	return out
