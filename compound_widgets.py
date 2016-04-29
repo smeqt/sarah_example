@@ -39,34 +39,6 @@ _global_element_list = [str(v) for k,v in PT.elements._element.iteritems() if k>
 
 
 
-class DropOrText(object):
-    
-    def __init__(self,description,width=100):
-        
-        self._drop = widgets.Dropdown(description=description,width=width)
-        self._text = widgets.Text(description=description,width=width)
-        self._box = widgets.HBox()
-        #self.set_drop()
-
-    def set_drop(self):
-        self._box.children = (self._drop,)
-        
-    def set_text(self):
-        self._box.children = (self._text,)
-        
-    def display(self):
-        return self._box
-    
-    @property
-    def options(self):
-        return self._box.children[0].options
-    
-    @options.setter
-    def options(self,value):
-        self.set_drop()
-        self._drop.options = value
-
-
 class component_row(object):
     """
     create a row
@@ -80,36 +52,27 @@ class component_row(object):
         self._element = widgets.Select(options=_global_element_list,height=60,width=50)
 
         #compound_type
-        self._compound_type = widgets.Dropdown(options=['Acid','Oxide','Salt'],description='Type:',width=100)
-        
+        self._compound_type = widgets.Dropdown(options=['acid','oxide','salt','all'],description='Type:',width=100)
         
         #blank compound list
-        #self._compound = DropOrText(description=' Compound ',width=180)
         self._compound = widgets.Dropdown(options=[],description='Compound:',width=180)
         
         self._choose_button = widgets.Button(description='Choose',width=30)
-        
         self._choose_button.on_click(self._add_formula)
-        
-        def _add_formula(self,*args,**kwargs):
-        	formula_val = self._compound.value
-        	self._formula.value = formula_val
-        
-        self._formula = widgets.Text(description='Formula:',width=50)
-        
-        for x in ['element','compound']:
 
-            getattr(self,'_'+x).margin = 0
-        #?
+        #NOTE: you forgot to have self._formula be anything!
+        self._formula = widgets.Text(description='Formula:',width=180)
+        
         
         #monitor element
         self._element.observe(self.populate_compound)
         self._compound_type.observe(self.populate_compound)
-        self._compound.observe(self.get_formula)
+        
+        #self._compound.observe(self.get_formula)
 
         
         self._box = widgets.HBox()
-        self._box.children = (self._element,self._compound_type,self._compound,self._choose_button,self._formula_val)
+        self._box.children = (self._element,self._compound_type,self._compound,self._choose_button,self._formula)
         
     def populate_compound(self,sender,*args,**kwargs):
         
@@ -122,15 +85,27 @@ class component_row(object):
         if out is not None:
             self._compound.options = list(map(str,out))
     
+    def _add_formula(self,*args,**kwargs):
+        formula_val = self._compound.value
+        self._formula.value = formula_val
+
+        #NOTE: this needed to be in init, not here!
+        #if here, we keep creating a new instance which isn't part of self._box!
+        #self._formula = widgets.Text(description='Formula:',width=50)
+        
+        for x in ['element','compound']:
+
+            getattr(self,'_'+x).margin = 0
+        #?
         
         
     @property
     def element(self):
         return self._element.value
-	
-	@element.setter
-	def element(self,val):
-		self._element.value = val
+
+    @element.setter
+    def element(self,val):
+        self._element.value = val
 
 
     @property
@@ -144,7 +119,7 @@ class component_row(object):
         
     @property
     def formula(self):
-    	return self._compound.value
+    	return self._formula.value
 
     
     def display(self):
@@ -152,7 +127,7 @@ class component_row(object):
 
 
     def to_dict(self):
-        return dict(element=self.element,compound=self.compound)
+        return dict(element=self.element,formula=self.formula)
         
 
 
@@ -162,7 +137,8 @@ class component_row_del(component_row):
         component_row.__init__(self)
         
         self._button_del = widgets.Button(description='Delete',width=30)
-        self._box.children = self._box.children + (self._button_del)
+        #(x) != (x,)
+        self._box.children = self._box.children + (self._button_del,)
         
         
 

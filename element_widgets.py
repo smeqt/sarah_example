@@ -35,39 +35,7 @@ def init():
 
 _global_element_list = [str(v) for k,v in PT.elements._element.iteritems() if k>0]
 
-
-
-class DropOrText(object):
-    
-    def __init__(self,description,width=100):
-        
-        self._drop = widgets.Dropdown(description=description,width=width)
-        self._text = widgets.Text(description=description,width=width)
-        self._box = widgets.HBox()
-        #self.set_drop()
-
-    def set_drop(self):
-        self._box.children = (self._drop,)
-        
-    def set_text(self):
-        self._box.children = (self._text,)
-        
-    def display(self):
-        return self._box
-    
-    @property
-    def options(self):
-        return self._box.children[0].options
-    
-    @options.setter
-    def options(self,value):
-        self.set_drop()
-        self._drop.options = value
-        
-    
-
-
-class component_row(object):
+class element_row(object):
     """
     create a row
     """    
@@ -78,36 +46,20 @@ class component_row(object):
         #elemenets
         #self._element = widgets.Dropdown(options=['','a','b','c'],value='',description='Element:',width=20)
         self._element = widgets.Select(options=_global_element_list,height=60,width=50)
-
-        #compound_type
-        self._compound_type = widgets.Dropdown(options=['acid','oxide','salt','user'],description=' Type ',width=100)
-        
-        
-        #blank compound list
-        #self._compound = DropOrText(description=' Compound ',width=180)
-        self._compound = widgets.Dropdown(options=[],description=' Compound ',width=180)
-        
-        #blank mass fraction
-        self._massfrac = widgets.BoundedFloatText(description=' mass frac:',width=75,min=0.,max=1.)
-        
+      
         #blank min
         self._massfrac_min = widgets.BoundedFloatText(description=' min:',width=75,min=0.,max=1.)
         
         #max
         self._massfrac_max = widgets.BoundedFloatText(description=' max:',width=75,min=0.,max=1.)
 
-        for x in ['element','compound','massfrac','massfrac_min','massfrac_max']:
+        for x in ['element','massfrac_min','massfrac_max']:
             getattr(self,'_'+x).margin = 0
-        
-        
-        #monitor element
-        self._element.observe(self.populate_compound)
-        self._compound_type.observe(self.populate_compound)
         
 
         
         self._box = widgets.HBox()
-        self._box.children = (self._element,self._compound_type,self._compound,self._massfrac,self._massfrac_min,self._massfrac_max)
+        self._box.children = (self._element,self._massfrac_min,self._massfrac_max)
         
     def populate_compound(self,sender,*args,**kwargs):
         
@@ -135,10 +87,6 @@ class component_row(object):
         return self._compound.value
     
     @property
-    def massfrac(self):
-        return self._massfrac.value
-    
-    @property
     def massfrac_min(self):
         return self._massfrac_min.value
     
@@ -151,15 +99,13 @@ class component_row(object):
 
 
     def to_dict(self):
-        return dict(element=self.element,compound=self.compound,massfrac=self.massfrac,massfrac_min=self.massfrac_min,massfrac_max=self.massfrac_max)
+        return dict(element=self.element,massfrac_min=self.massfrac_min,massfrac_max=self.massfrac_max)
         
 
 
-class component_row_del(component_row):
-
+class element_row_del(element_row):
     def __init__(self):
-        component_row.__init__(self)
-        
+        element_row.__init__(self)
         self._button_del = widgets.Button(description='delete',width=30)
         self._box.children = self._box.children + (self._button_del,)
         
@@ -215,7 +161,7 @@ class mult_rows(object):
         if len(self._ring)>0:
             return self._ring.pop()
         else:
-            new = component_row_del()
+            new = element_row_del()
         return new
     
     def add_row(self):
