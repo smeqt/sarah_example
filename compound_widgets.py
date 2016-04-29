@@ -109,7 +109,7 @@ class component_row(object):
 
         
         self._box = widgets.HBox()
-        self._box.children = (self._element,self._compound_type,self._compound,self._choose_button,self._formula)
+        self._box.children = (self._element,self._compound_type,self._compound,self._choose_button,self._formula_val)
         
     def populate_compound(self,sender,*args,**kwargs):
         
@@ -152,7 +152,7 @@ class component_row(object):
 
 
     def to_dict(self):
-        return dict(element=self.element,compound=self.compound,massfrac=self.massfrac,massfrac_min=self.massfrac_min,massfrac_max=self.massfrac_max)
+        return dict(element=self.element,compound=self.compound)
         
 
 
