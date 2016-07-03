@@ -5,9 +5,7 @@ import periodictable as PT
 
 from suggester_interface import get_compound_list
 
-	
 
-### Choices--- overpopulation; too many of same option(ex HNO3)
 cells_visable = True
 def toggle_code_cells(btn):
     global cells_visable
@@ -37,9 +35,7 @@ def init():
 
 _global_element_list = [str(v) for k,v in PT.elements._element.iteritems() if k>0]
 
-
-
-class component_row(object):
+class element_row(object):
     """
     create a row
     """    
@@ -50,97 +46,68 @@ class component_row(object):
         #elemenets
         #self._element = widgets.Dropdown(options=['','a','b','c'],value='',description='Element:',width=20)
         self._element = widgets.Select(options=_global_element_list,height=60,width=50)
-
-        #compound_type
-        self._compound_type = widgets.Dropdown(options=['acid','oxide','salt','all'],description='Type:',width=100)
+      
+        self._compound = widgets.Text(description='Compound:',width=75)
         
-        #blank compound list
-        self._compound = widgets.Dropdown(options=[],description='Compound:',width=180)
+        self._suggested_mass = widgets.BoundedFloatText(description='Suggested Mass:',width=75,min=0.,max=1.)
         
-        self._choose_button = widgets.Button(description='Choose',width=30)
-        self._choose_button.on_click(self._add_formula)
-
-        #NOTE: you forgot to have self._formula be anything!
-        self._formula = widgets.Text(description='Formula:',width=50)
+        self._actual_mass = widgets.BoundedFloatText(description='Actual Mass:',width=75,min=0.,max=1.)
         
-        
-        #monitor element
-        self._element.observe(self.populate_compound)
-        self._compound_type.observe(self.populate_compound)
-        
-        #self._compound.observe(self.get_formula)
 
         
         self._box = widgets.HBox()
-        self._box.children = (self._element,self._compound_type,self._compound,self._choose_button,self._formula)
-        
-    def populate_compound(self,sender,*args,**kwargs):
-        
-        element_name  = self.element
-        compound_type = self.compound_type
-
-        out = get_compound_list(element_name,compound_type)
-        
-        #out = [element_name,compound_type]
-        if out is not None:
-            self._compound.options = list(map(str,out))
-    
-    def _add_formula(self,*args,**kwargs):
-        formula_val = self._compound.value
-        self._formula.value = formula_val
-
-        #NOTE: this needed to be in init, not here!
-        #if here, we keep creating a new instance which isn't part of self._box!
-        #self._formula = widgets.Text(description='Formula:',width=50)
-        
-        for x in ['element','compound']:
-
-            getattr(self,'_'+x).margin = 0
-        #?
-        
+        self._box.children = (self._element,self._compound,self._suggested_mass,self._actual_mass)
         
     @property
     def element(self):
         return self._element.value
-
+        
     @element.setter
     def element(self,val):
         self._element.value = val
-
-
-    @property
-    def compound_type(self):
-        return self._compound_type.value
 
     
     @property
     def compound(self):
         return self._compound.value
-        
+    
+    @compound.setter
+    def compound(self,val):
+        self._compound.value = val
+    
     @property
-    def formula(self):
-    	return self._formula.value
+    def suggested_mass(self):
+        return self._suggested_mass.value
 
-	@formula.setter
-	def formula(self,val):
-		self._formula.value = val
+    @suggested_mass.setter
+    def suggested_mass(self,val):
+        self._suggested_mass.value = val
+
+    @property
+    def actual_mass(self):
+        return self._actual_mass.value
+
+    @actual_mass.setter
+    def actual_mass(self,val):
+        self._actual_mass.value = val
     
     def display(self):
         return self._box
 
 
     def to_dict(self):
-        return dict(element=self.element,formula=self.formula)
+        return dict(element=self.element,compound=self.compound,suggested_mass=self.suggested_mass, actual_mass=self.actual_mass)
         
 
 
-class component_row_del(component_row):
+class element_row_del(element_row):
+
+#     def __init__(self):
+#         element_row.__init__(self)
 
     def __init__(self):
-        component_row.__init__(self)
-        
-        self._button_del = widgets.Button(description='Delete',width=30)
-        #(x) != (x,)
+        element_row.__init__(self)
+        self._button_del = widgets.Button(description='delete',width=30)
         self._box.children = self._box.children + (self._button_del,)
         
         
@@ -169,20 +136,24 @@ class mult_rows(object):
         self.ncomp = ncomp
         self.update_rows()
         self.update_box()
-        
+
     @staticmethod
-    def from_df(df):
-        new = mult_rows(ncomp=len(df))
-        for i,g in df.iterrows():
+    def from_compound_df(compound_df):
+        new = mult_rows(ncomp=len(compound_df))
+        for i,g in compound_df.iterrows():
             row = new[i]
             row.element = g['element']
-            row.formula = g['formula']
+            row.compound = g['compound']
+            row.suggested_mass = g['suggested mass']
+            row.actual_mass = g['actual mass']
         return new
-    
 
-
+  
     def __getitem__(self,i):
         return self._rows[i]
+
+    def __setitem__(self,i,val):
+        self._row[i] = val
 
     @property
     def ncomp(self):
@@ -200,12 +171,12 @@ class mult_rows(object):
     def nrow(self):
         return len(self._rows)
 
-		
+
     def new_row(self):
         if len(self._ring)>0:
             return self._ring.pop()
         else:
-            new = component_row_del()
+            new = element_row_del()
         return new
     
     def add_row(self):
